@@ -4,7 +4,7 @@ import { useState } from "react";
 import { Colors } from "../../constants/Colors";
 import OutlineButton from "../UI/OutlinedButton";
 
-function ImagePicker() {
+function ImagePicker({ onImageTaken }) {
     const [cameraPermissionInformation, requestPermission] = useCameraPermissions();
     const [pickedImage, setPickedImage] = useState()
 
@@ -37,6 +37,7 @@ function ImagePicker() {
 
 
         setPickedImage(image.assets[0].uri)
+        onImageTaken(image.assets[0].uri)
     }
 
     let imagePreview = <Text>No Image Picked yet..</Text>
@@ -66,6 +67,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary100,
         justifyContent: 'center',
         alignItems: 'center',
+        marginHorizontal: "auto",
 
         borderWidth: 1
     },

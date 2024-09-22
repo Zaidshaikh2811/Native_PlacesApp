@@ -3,15 +3,40 @@ import OutlineButton from "../UI/OutlinedButton";
 import { Colors } from "../../constants/Colors";
 import { getCurrentPositionAsync, PermissionStatus, useForegroundPermissions } from "expo-location";
 import MapView, { Marker } from "react-native-maps";
-import { useState } from "react";
-import { useNavigation } from "@react-navigation/native";
+import { useEffect, useState } from "react";
+import { useIsFocused, useNavigation, useRoute } from "@react-navigation/native";
 
 
-function LocationPicker() {
+function LocationPicker({ onLocationPicked }) {
     const navigation = useNavigation();
+    const isFocused = useIsFocused()
+    const route = useRoute();
     const [locationPermissionInfo, requestPermission] = useForegroundPermissions()
 
     const [coordinates, setCoordinates] = useState(null)
+
+
+
+    useEffect(() => {
+        if (isFocused && route.params) {
+
+            const mapPickedLocation = {
+                lat: route.params.pickedLat,
+                long: route.params.pickedLng
+            }
+
+
+            setCoordinates(mapPickedLocation)
+
+        }
+
+
+
+    }, [isFocused, route])
+
+    useEffect(() => {
+        onLocationPicked(coordinates)
+    }, [coordinates, onLocationPicked])
 
     async function verifyPermission() {
         if (locationPermissionInfo.status === PermissionStatus.UNDETERMINED) {
@@ -59,12 +84,16 @@ function LocationPicker() {
         <View style={styles.mapPreview}>
             {
                 coordinates ?
-                    <MapView style={styles.map} >
+                    <MapView style={styles.map} initialRegion={{
+                        latitude: coordinates.lat,
+                        longitude: coordinates.long,
+                        latitudeDelta: 0.01,
+                        longitudeDelta: 0.01,
+                    }}  >
                         <Marker coordinate={{
                             latitude: coordinates.lat,
                             longitude: coordinates.long,
-                            latitudeDelta: 0.01,
-                            longitudeDelta: 0.01,
+
                         }} title="marker" />
                     </MapView> : null
             }
@@ -87,7 +116,7 @@ const styles = StyleSheet.create({
         borderColor: Colors.primary100,
         justifyContent: 'center',
         alignItems: 'center',
-
+        marginHorizontal: "auto",
         borderWidth: 1
     },
     actions: {
